@@ -22,7 +22,7 @@ func NewConversationModel() ConversationModel {
 }
 
 // Update updates the conversation model
-func (m ConversationModel) Update(msg tea.Msg) (ConversationModel, tea.Cmd) {
+func (m *ConversationModel) Update(msg tea.Msg) (ConversationModel, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -41,11 +41,11 @@ func (m ConversationModel) Update(msg tea.Msg) (ConversationModel, tea.Cmd) {
 	}
 
 	m.viewport, cmd = m.viewport.Update(msg)
-	return m, cmd
+	return *m, cmd
 }
 
 // View renders the conversation view
-func (m ConversationModel) View(width, height int, conversation *client.ConversationResponse, agent *client.Agent, errorMsg string) string {
+func (m *ConversationModel) View(width, height int, conversation *client.ConversationResponse, agent *client.Agent, errorMsg string) string {
 	if agent == nil {
 		return styles.ErrorStyle.Render("No agent selected")
 	}
@@ -71,6 +71,10 @@ func (m ConversationModel) View(width, height int, conversation *client.Conversa
 			conversationContent := m.renderConversation(conversation)
 			m.viewport.SetContent(conversationContent)
 		}
+	} else {
+		// Update viewport size
+		m.viewport.Width = width - 4
+		m.viewport.Height = height - 8
 	}
 
 	// Conversation content

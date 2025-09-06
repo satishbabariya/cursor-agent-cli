@@ -177,47 +177,51 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keyMap.Quit):
+		// Only handle truly global keys that should work everywhere
+		switch msg.String() {
+		case "q", "ctrl+c":
 			return m, tea.Quit
 
-		case key.Matches(msg, m.keyMap.Help):
+		case "?", "f1":
 			m.currentView = HelpView
+			return m, tea.Batch(cmds...)
 
-		case key.Matches(msg, m.keyMap.Back):
+		case "esc":
 			if m.currentView != DashboardView {
 				m.currentView = DashboardView
+				return m, tea.Batch(cmds...)
 			}
 
-		case key.Matches(msg, m.keyMap.Refresh):
+		case "r", "f5":
 			cmd = m.fetchAgents()
 			cmds = append(cmds, cmd)
 
-		case key.Matches(msg, m.keyMap.Enter):
-			if m.currentView == DashboardView && m.selectedAgent != nil {
-				m.currentView = AgentDetailsView
-			}
-
-		case key.Matches(msg, m.keyMap.Details):
+		case "d":
 			if m.selectedAgent != nil {
 				m.currentView = AgentDetailsView
+				return m, tea.Batch(cmds...)
 			}
 
-		case key.Matches(msg, m.keyMap.Conversation):
+		case "c":
 			if m.selectedAgent != nil {
 				m.currentView = ConversationView
 				cmd = m.fetchConversation(m.selectedAgent.ID)
 				cmds = append(cmds, cmd)
+				return m, tea.Batch(cmds...)
 			}
 
-		case key.Matches(msg, m.keyMap.Followup):
+		case "f":
 			if m.selectedAgent != nil && m.selectedAgent.Status == "RUNNING" {
 				m.currentView = FollowupView
+				return m, tea.Batch(cmds...)
 			}
 
-		case key.Matches(msg, m.keyMap.Settings):
+		case "s":
 			m.currentView = SettingsView
+			return m, tea.Batch(cmds...)
 		}
+
+		// All other keys (including up/down/j/k) go to the current view
 
 	case AgentsMsg:
 		m.agents = msg.Agents
@@ -257,9 +261,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case DashboardView:
 		m.dashboard, cmd = m.dashboard.Update(msg)
 	case AgentDetailsView:
-		m.details, cmd = m.details.Update(msg)
+		m.details, cmd = (&m.details).Update(msg)
 	case ConversationView:
-		m.conversationModel, cmd = m.conversationModel.Update(msg)
+		m.conversationModel, cmd = (&m.conversationModel).Update(msg)
 	case FollowupView:
 		m.followup, cmd = m.followup.Update(msg)
 	case SettingsView:
@@ -282,9 +286,9 @@ func (m Model) View() string {
 	case DashboardView:
 		return m.dashboard.View(m.width, m.height, m.agents, m.selectedAgent, m.error)
 	case AgentDetailsView:
-		return m.details.View(m.width, m.height, m.selectedAgent, m.error)
+		return (&m.details).View(m.width, m.height, m.selectedAgent, m.error)
 	case ConversationView:
-		return m.conversationModel.View(m.width, m.height, m.conversation, m.selectedAgent, m.error)
+		return (&m.conversationModel).View(m.width, m.height, m.conversation, m.selectedAgent, m.error)
 	case FollowupView:
 		return m.followup.View(m.width, m.height, m.selectedAgent, m.error)
 	case SettingsView:

@@ -20,7 +20,7 @@ func NewDetailsModel() DetailsModel {
 }
 
 // Update updates the details model
-func (m DetailsModel) Update(msg tea.Msg) (DetailsModel, tea.Cmd) {
+func (m *DetailsModel) Update(msg tea.Msg) (DetailsModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -37,11 +37,11 @@ func (m DetailsModel) Update(msg tea.Msg) (DetailsModel, tea.Cmd) {
 		}
 	}
 
-	return m, nil
+	return *m, nil
 }
 
 // View renders the details view
-func (m DetailsModel) View(width, height int, agent *client.Agent, errorMsg string) string {
+func (m *DetailsModel) View(width, height int, agent *client.Agent, errorMsg string) string {
 	if agent == nil {
 		return styles.ErrorStyle.Render("No agent selected")
 	}
@@ -71,22 +71,30 @@ func (m DetailsModel) View(width, height int, agent *client.Agent, errorMsg stri
 	// Handle scrolling
 	availableHeight := height - 6 // Account for header, help, padding
 	if len(lines) > availableHeight {
+		// Clamp scroll offset to valid range
+		maxScroll := len(lines) - availableHeight
+		if maxScroll < 0 {
+			maxScroll = 0
+		}
+		if m.scrollOffset > maxScroll {
+			m.scrollOffset = maxScroll
+		}
+		if m.scrollOffset < 0 {
+			m.scrollOffset = 0
+		}
+
 		start := m.scrollOffset
 		end := start + availableHeight
 		if end > len(lines) {
 			end = len(lines)
-			start = end - availableHeight
-			if start < 0 {
-				start = 0
-			}
 		}
 		lines = lines[start:end]
 	}
 
 	content.WriteString(strings.Join(lines, "\n") + "\n\n")
 
-	// Help
-	helpText := "↑/↓: Scroll | c: Conversation | f: Follow-up | Esc: Back | q: Quit"
+	// Help with scroll position indicator
+	helpText := fmt.Sprintf("↑/↓: Scroll (offset: %d) | c: Conversation | f: Follow-up | Esc: Back | q: Quit", m.scrollOffset)
 	content.WriteString(styles.HelpStyle.Render(helpText))
 
 	return styles.BaseStyle.Width(width).Height(height).Render(content.String())
