@@ -5,12 +5,15 @@ A command-line interface tool for managing Cursor Background Agents built with G
 ## Features
 
 - 🚀 **Easy Setup**: Initialize with your API key using `cursor-cli init`
+- 🎨 **Interactive TUI**: Rich text-based user interface with real-time updates
 - 📋 **List Agents**: View all your background agents with pagination support
 - 🔍 **Agent Status**: Get detailed status and information about specific agents
 - 💬 **Conversation History**: View the conversation history of any agent
 - 📤 **Follow-up Instructions**: Send additional instructions to running agents
 - 🔑 **API Key Management**: View information about your current API key
 - ⚙️ **Configuration**: Stores API key securely in `~/.cursor-cli.yaml`
+- 🔄 **Auto-refresh**: Real-time agent status updates every 30 seconds
+- ⌨️ **Keyboard Shortcuts**: Efficient navigation with vim-like key bindings
 
 ## Installation
 
@@ -38,17 +41,52 @@ go install github.com/satishbabariya/cursor-background-agent-cli@latest
    
    Get your API key from [Cursor Dashboard → Integrations](https://cursor.com/dashboard).
 
-2. **List your background agents:**
+2. **Launch the interactive TUI (recommended):**
    ```bash
-   cursor-cli list
+   cursor-cli tui
    ```
 
-3. **Get status of a specific agent:**
+3. **Or use individual CLI commands:**
    ```bash
-   cursor-cli status bc_abc123
+   cursor-cli list                    # List agents
+   cursor-cli status bc_abc123        # Get agent status
+   cursor-cli conversation bc_abc123  # View conversation
    ```
 
-## Commands
+## Interactive TUI
+
+### `cursor-cli tui`
+Launch the interactive Text User Interface for the best experience managing your background agents.
+
+**Features:**
+- 📊 **Real-time Dashboard**: Live agent status updates with color-coded indicators
+- 🔍 **Agent Details**: Comprehensive view of agent information, source, and target details  
+- 💬 **Conversation Viewer**: Scrollable conversation history with message threading
+- 📝 **Follow-up Composer**: Send additional instructions with both short and long message modes
+- ⚙️ **Settings Panel**: Configure auto-refresh and other preferences
+- ❓ **Built-in Help**: Comprehensive keyboard shortcut reference
+
+**Keyboard Shortcuts:**
+- `↑/↓` or `j/k`: Navigate up/down
+- `Enter`: Select/view details
+- `d`: View agent details
+- `c`: View conversation
+- `f`: Send follow-up (running agents only)
+- `t`: Toggle show all/active agents
+- `r`: Refresh agents
+- `s`: Settings
+- `?`: Help
+- `q`: Quit
+
+**Views:**
+1. **Dashboard**: Main view showing all agents in a table format
+2. **Details**: Detailed agent information including repository, branch, and summary
+3. **Conversation**: Full conversation history with the agent
+4. **Follow-up**: Compose and send additional instructions
+5. **Settings**: Configure application preferences
+6. **Help**: Comprehensive keyboard shortcut reference
+
+## CLI Commands
 
 ### `cursor-cli init`
 Initialize cursor-cli with your API key. This will prompt you to enter your API key and validate it.
