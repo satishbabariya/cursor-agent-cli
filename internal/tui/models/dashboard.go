@@ -14,9 +14,11 @@ import (
 
 // DashboardModel represents the dashboard view model
 type DashboardModel struct {
-	table       table.Model
-	showAll     bool
-	selectedRow int
+	table          table.Model
+	showAll        bool
+	selectedRow    int
+	filteredAgents []client.Agent
+	allAgents      []client.Agent
 }
 
 // NewDashboardModel creates a new dashboard model
@@ -62,11 +64,17 @@ func (m DashboardModel) Update(msg tea.Msg) (DashboardModel, tea.Cmd) {
 		switch {
 		case key.Matches(msg, key.NewBinding(key.WithKeys("t"))):
 			m.showAll = !m.showAll
+			// Re-filter the table with current agents
+			m.updateTable(m.allAgents)
 
 		case key.Matches(msg, key.NewBinding(key.WithKeys("enter"))):
 			selectedRow := m.table.Cursor()
-			return m, func() tea.Msg {
-				return AgentSelectedMsg{Index: selectedRow}
+			if selectedRow < len(m.filteredAgents) {
+				// Find the index in the original agents slice
+				selectedAgent := m.filteredAgents[selectedRow]
+				return m, func() tea.Msg {
+					return AgentSelectedMsg{Agent: selectedAgent}
+				}
 			}
 		}
 
@@ -131,13 +139,18 @@ func (m DashboardModel) View(width, height int, agents []client.Agent, selectedA
 
 // updateTable updates the table with new agent data
 func (m *DashboardModel) updateTable(agents []client.Agent) {
+	m.allAgents = agents // Store all agents
+
 	var rows []table.Row
+	var filteredAgents []client.Agent
 
 	for _, agent := range agents {
 		// Filter expired agents if not showing all
 		if !m.showAll && agent.Status == "EXPIRED" {
 			continue
 		}
+
+		filteredAgents = append(filteredAgents, agent)
 
 		statusText := fmt.Sprintf("%s %s",
 			styles.GetStatusEmoji(agent.Status),
@@ -162,6 +175,7 @@ func (m *DashboardModel) updateTable(agents []client.Agent) {
 		rows = append(rows, row)
 	}
 
+	m.filteredAgents = filteredAgents
 	m.table.SetRows(rows)
 }
 

@@ -193,6 +193,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmd = m.fetchAgents()
 			cmds = append(cmds, cmd)
 
+		case key.Matches(msg, m.keyMap.Enter):
+			if m.currentView == DashboardView && m.selectedAgent != nil {
+				m.currentView = AgentDetailsView
+			}
+
 		case key.Matches(msg, m.keyMap.Details):
 			if m.selectedAgent != nil {
 				m.currentView = AgentDetailsView
@@ -242,9 +247,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 
 	case AgentSelectedMsg:
-		if msg.Index < len(m.agents) {
-			m.selectedAgent = &m.agents[msg.Index]
-		}
+		m.selectedAgent = &msg.Agent
+		// Automatically switch to details view when agent is selected
+		m.currentView = AgentDetailsView
 	}
 
 	// Update current view

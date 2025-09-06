@@ -27,7 +27,7 @@ type TickMsg time.Time
 
 // AgentSelectedMsg represents an agent selection
 type AgentSelectedMsg struct {
-	Index int
+	Agent client.Agent
 }
 
 // FollowupSentMsg represents a successful followup message
